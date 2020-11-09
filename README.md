@@ -15,7 +15,6 @@ QRZ.com is required for full functionality.
 # Dependencies
 
 * curl
-* GNU grep (will not work with BSD grep implementations)
 
 # Configuration
 
