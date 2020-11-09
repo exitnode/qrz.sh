@@ -12,6 +12,11 @@ QRZ.com is required for full functionality.
 * Copy the file _qrz.sh_ into a directory that is in you PATH variable
 * Set the correct file permissions: _chmod u+x qrz.sh_
 
+# Dependencies
+
+* curl
+* GNU grep (will not work with BSD grep implementations)
+
 # Configuration
 
 Edit the file _~/.qrz.conf_ like this:
