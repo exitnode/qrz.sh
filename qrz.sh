@@ -39,7 +39,8 @@ call=$1
 session_xml=$(curl -s -X GET 'http://xmldata.qrz.com/xml/current/?username='${user}';password='${password}';agent=qrz_sh')
 
 # check for login errors
-e=$(printf %s "$session_xml" | grep -oP "(?<=<Error>).*?(?=</Error>)" )
+#e=$(printf %s "$session_xml" | grep -oP "(?<=<Error>).*?(?=</Error>)" ) # only works with GNU grep
+e=$(printf %s "$session_xml" | awk -v FS="(<Error>|<\/Error>)" '{print $2}' | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n//g')
 if [ "$e" != ""  ]
   then
     echo "The following error has occured: $e"
@@ -47,15 +48,26 @@ if [ "$e" != ""  ]
   fi
 
 # extract session key from response
-session_key=$(printf %s "$session_xml" |grep -oP '(?<=<Key>).*?(?=</Key>)')
+#session_key=$(printf %s "$session_xml" |grep -oP '(?<=<Key>).*?(?=</Key>)') # only works with GNU grep
+session_key=$(printf %s "$session_xml" | awk -v FS="(<Key>|<\/Key>)" '{print $2}' | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n//g')
 
 # lookup callsign at qrz.com
 lookup_result=$(curl -s -X GET 'http://xmldata.qrz.com/xml/current/?s='${session_key}';callsign='${call}'')
 
+# check for login errors
+#e=$(printf %s "$lookup_result" | grep -oP "(?<=<Error>).*?(?=</Error>)" ) # only works with GNU grep
+e=$(printf %s "$lookup_result" | awk -v FS="(<Error>|<\/Error>)" '{print $2}' | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n//g')
+if [ "$e" != ""  ]
+  then
+    echo "$e"
+    exit
+  fi
+
 # grep field values from xml and put them into variables
 for f in "call" "fname" "name" "addr1" "addr2" "country" "grid" "email" "user" "lotw" "mqsl" "eqsl" "qslmgr"
 do
-  z=$(printf %s "$lookup_result" | grep -oP "(?<=<${f}>).*?(?=</${f}>)" )
+  #z=$(printf %s "$lookup_result" | grep -oP "(?<=<${f}>).*?(?=</${f}>)" ) # only works with GNU grep
+  z=$(printf %s "$lookup_result" | awk -v FS="(<${f}>|<\/${f}>)" '{print $2}' | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n//g')
   eval "$f='${z}'";
 done
 
